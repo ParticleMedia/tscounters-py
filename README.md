@@ -16,12 +16,12 @@ import random
 tscounters.init()
 tscounters.add_counter_engine(
     tscounters.OpenTSDBCounterEngine(
-        hostname="opentsdb.ha.nb.com"
+        hostname="opentsdb-server-hostname"
     )
 )
 
 counter = tscounters.SimpleCounter(
-    name="newsletter-scheduler.test",
+    name="counter-name",
     aggregator=tscounters.SumAggregator(),
 )
 
