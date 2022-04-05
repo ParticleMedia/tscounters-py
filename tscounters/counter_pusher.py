@@ -15,8 +15,7 @@ def pusher_thread(commit_interval):
 
             for counter_engine in counter_engines:
                 for counter_instance in counter_instances:
-                    counter_engine.commit_counter(counter_instance)
-                    counter_instance.on_commit()
+                    counter_instance.commit(counter_engine)
 
         time.sleep(commit_interval)
 

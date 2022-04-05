@@ -19,7 +19,7 @@ class Counter:
     def set(self, value, tags=None):
         raise NotImplemented()
 
-    def on_commit(self):
+    def commit(self, counter_engine):
         raise NotImplemented()
 
 
@@ -30,5 +30,29 @@ class SimpleCounter(Counter):
         key = self.get_tags_str(tags)
         self.data[key].append((time.time(), value, tags))
 
-    def on_commit(self):
+    def commit(self, counter_engine):
+        metrics = []
+        for tag_str, tag_data in self.data.items():
+            if self.aggregator is None:
+                for ts, value, tags in tag_data:
+                    metrics.append({
+                        "metric": self.name,
+                        "timestamp": int(ts * 1000),
+                        "value": value,
+                        "tags": tags,
+                    })
+            else:
+                agg_value = self.aggregator.aggregate([
+                    value for _, value, tags in tag_data
+                ])
+
+                metrics.append({
+                    "metric": self.name,
+                    "timestamp": int(time.time() * 1000),
+                    "value": agg_value,
+                    "tags": tag_data[0][2],
+                })
+
         self.data.clear()
+
+        return counter_engine.commit_metrics(metrics)
