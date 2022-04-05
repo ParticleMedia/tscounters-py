@@ -8,21 +8,22 @@ from .counters import counter_instances
 counter_engines = []
 
 
-def pusher_thread():
+def pusher_thread(commit_interval):
     while True:
         if counter_instances:
-            logging.info("Committing {} counters...".format(len(counter_instances)))
+            logging.debug("Committing {} counters...".format(len(counter_instances)))
 
             for counter_engine in counter_engines:
                 for counter_instance in counter_instances:
                     counter_engine.commit_counter(counter_instance)
                     counter_instance.on_commit()
 
-        time.sleep(1)
+        time.sleep(commit_interval)
 
 
-def init_counter_pusher():
-    t = threading.Thread(target=pusher_thread)
+def init_counter_pusher(commit_interval=1):
+    t = threading.Thread(target=pusher_thread, args=(commit_interval, ))
+    t.daemon = True
     t.start()
 
 
