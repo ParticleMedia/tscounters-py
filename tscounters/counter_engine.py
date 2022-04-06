@@ -13,12 +13,13 @@ class OpenTSDBCounterEngine(CounterEngine):
     def __init__(self, hostname, port=4242):
         self.hostname = hostname
         self.port = port
+        self.session = requests.Session()
 
     def commit_metrics(self, metrics):
         if not metrics:
             return True
 
-        res = requests.post(
+        res = self.session.post(
             "http://{}:{}/api/put?details=true".format(self.hostname, self.port),
             data=json.dumps(metrics),
         )
