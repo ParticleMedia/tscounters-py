@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='tscounters-py',
-    version='0.0.7',
+    version='0.0.1',
     description='Time-series counters',
     author='Jiaxin Cao',
     author_email='Jiaxin.Cao@gmail.com',
@@ -13,5 +13,6 @@ setup(
     keywords="opentsdb, metrics, counters",
     install_requires=[
         "requests",
+        "prometheus_client",
     ]
 )
