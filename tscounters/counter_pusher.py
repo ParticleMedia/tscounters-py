@@ -13,9 +13,10 @@ def pusher_thread(commit_interval):
         if counter_instances:
             logging.debug("Committing {} counters...".format(len(counter_instances)))
 
-            for counter_engine in counter_engines:
-                for counter_instance in counter_instances:
+            for counter_instance in counter_instances:
+                for counter_engine in counter_engines:
                     counter_instance.commit(counter_engine)
+                counter_instance.commit_finish()
 
         time.sleep(commit_interval)
 

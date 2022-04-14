@@ -22,6 +22,9 @@ class Counter:
     def commit(self, counter_engine):
         raise NotImplemented()
 
+    def commit_finish(self):
+        pass
+
 
 class SimpleCounter(Counter):
     def set(self, value, tags=None):
@@ -53,6 +56,7 @@ class SimpleCounter(Counter):
                     "tags": tag_data[0][2],
                 })
 
-        self.data.clear()
-
         return counter_engine.commit_metrics(metrics)
+
+    def commit_finish(self):
+        self.data.clear()
