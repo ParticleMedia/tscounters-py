@@ -1,5 +1,6 @@
 import collections
 import time
+import threading
 
 
 counter_instances = []
@@ -10,6 +11,7 @@ class Counter:
         self.name = name
         self.data = collections.defaultdict(list)
         self.aggregator = aggregator
+        self.lock = threading.Lock()
 
         counter_instances.append(self)
 
@@ -19,21 +21,28 @@ class Counter:
     def set(self, value, tags=None):
         raise NotImplemented()
 
-    def commit(self, counter_engine):
+    def commit(self, counter_engines):
         raise NotImplemented()
-
-    def commit_finish(self):
-        pass
 
 
 class SimpleCounter(Counter):
     def set(self, value, tags=None):
-        tags = tags or {}
+        # Acquire lock.
+        self.lock.acquire()
 
+        # Update data.
+        tags = tags or {}
         key = self.get_tags_str(tags)
         self.data[key].append((time.time(), value, tags))
 
-    def commit(self, counter_engine):
+        # Release lock.
+        self.lock.release()
+
+    def commit(self, counter_engines):
+        # Acquire lock.
+        self.lock.acquire()
+
+        # Generate metrics.
         metrics = []
         for tag_str, tag_data in self.data.items():
             if self.aggregator is None:
@@ -56,7 +65,12 @@ class SimpleCounter(Counter):
                     "tags": tag_data[0][2],
                 })
 
-        return counter_engine.commit_metrics(metrics)
+        # Commit metrics.
+        for counter_engine in counter_engines:
+            counter_engine.commit_metrics(metrics)
 
-    def commit_finish(self):
+        # Clear data.
         self.data.clear()
+
+        # Release lock.
+        self.lock.release()

@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='tscounters-py',
-    version='0.0.1',
+    version='0.0.2',
     description='Time-series counters',
     author='Jiaxin Cao',
     author_email='Jiaxin.Cao@gmail.com',
