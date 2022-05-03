@@ -72,5 +72,8 @@ class SimpleCounter(Counter):
         # Clear data.
         self.data.clear()
 
+        # Reset aggregator.
+        self.aggregator.reset()
+
         # Release lock.
         self.lock.release()
