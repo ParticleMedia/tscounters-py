@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(
-    name='tscounters-py',
+    name='tscounters-py-nb',
     version='0.0.4',
     description='Time-series counters',
     author='Songyan Hou',
