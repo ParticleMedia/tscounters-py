@@ -41,39 +41,39 @@ class SimpleCounter(Counter):
     def commit(self, counter_engines):
         # Acquire lock.
         self.lock.acquire()
+        try:
+            # Generate metrics.
+            metrics = []
+            for tag_str, tag_data in self.data.items():
+                if self.aggregator is None:
+                    for ts, value, tags in tag_data:
+                        metrics.append({
+                            "metric": self.name,
+                            "timestamp": int(ts * 1000),
+                            "value": value,
+                            "tags": tags,
+                        })
+                else:
+                    agg_value = self.aggregator.aggregate([
+                        value for _, value, tags in tag_data
+                    ])
 
-        # Generate metrics.
-        metrics = []
-        for tag_str, tag_data in self.data.items():
-            if self.aggregator is None:
-                for ts, value, tags in tag_data:
                     metrics.append({
                         "metric": self.name,
-                        "timestamp": int(ts * 1000),
-                        "value": value,
-                        "tags": tags,
+                        "timestamp": int(time.time() * 1000),
+                        "value": agg_value,
+                        "tags": tag_data[0][2],
                     })
-            else:
-                agg_value = self.aggregator.aggregate([
-                    value for _, value, tags in tag_data
-                ])
 
-                metrics.append({
-                    "metric": self.name,
-                    "timestamp": int(time.time() * 1000),
-                    "value": agg_value,
-                    "tags": tag_data[0][2],
-                })
+            # Commit metrics.
+            for counter_engine in counter_engines:
+                counter_engine.commit_metrics(metrics)
+        finally:
+            # Clear data.
+            self.data.clear()
 
-        # Commit metrics.
-        for counter_engine in counter_engines:
-            counter_engine.commit_metrics(metrics)
+            # Reset aggregator.
+            self.aggregator.reset()
 
-        # Clear data.
-        self.data.clear()
-
-        # Reset aggregator.
-        self.aggregator.reset()
-
-        # Release lock.
-        self.lock.release()
+            # Release lock.
+            self.lock.release()
